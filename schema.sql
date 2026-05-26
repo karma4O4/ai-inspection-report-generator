@@ -26,6 +26,8 @@ CREATE TABLE IF NOT EXISTS images (
   ai_description TEXT,
   edited_description TEXT,
   ocr_text TEXT,
+  severity TEXT,
+  cost_estimate TEXT,
   upload_order INTEGER,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

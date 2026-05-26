@@ -33,6 +33,8 @@ class ImageCreate(BaseModel):
     ai_description: Optional[str] = None
     edited_description: Optional[str] = None
     ocr_text: Optional[str] = None
+    severity: Optional[str] = None
+    cost_estimate: Optional[str] = None
     upload_order: Optional[int] = 0
 
 class ImageUpdate(BaseModel):
@@ -40,6 +42,8 @@ class ImageUpdate(BaseModel):
     ai_description: Optional[str] = None
     edited_description: Optional[str] = None
     ocr_text: Optional[str] = None
+    severity: Optional[str] = None
+    cost_estimate: Optional[str] = None
     upload_order: Optional[int] = None
 
 class ImageResponse(BaseModel):
@@ -51,6 +55,8 @@ class ImageResponse(BaseModel):
     ai_description: Optional[str] = None
     edited_description: Optional[str] = None
     ocr_text: Optional[str] = None
+    severity: Optional[str] = None
+    cost_estimate: Optional[str] = None
     upload_order: Optional[int] = 0
     created_at: datetime
 
@@ -100,6 +106,8 @@ class AIAnalyzeImageRequest(BaseModel):
 class AIAnalyzeImageResponse(BaseModel):
     image_id: UUID
     description: str
+    severity: Optional[str] = None
+    cost_estimate: Optional[str] = None
 
 class AIGenerateConclusionRequest(BaseModel):
     report_id: UUID
@@ -116,3 +124,5 @@ class AIOCRResponse(BaseModel):
 
 class GeneratePDFRequest(BaseModel):
     report_id: UUID
+    client_email: Optional[str] = None
+    lang: Optional[str] = "en"

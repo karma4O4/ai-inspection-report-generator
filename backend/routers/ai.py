@@ -9,6 +9,8 @@ from utils.auth import get_current_user, CurrentUser
 from utils.database import supabase
 from services.openai_service import OpenAIService
 from services.ocr_service import OCRService
+from services.severity_service import SeverityService
+from services.cost_estimation_service import CostEstimationService
 
 router = APIRouter(tags=["ai"])
 
@@ -47,13 +49,29 @@ def analyze_image(
         # Generate description using AI
         ai_description = OpenAIService.generate_image_description(payload.category, image_url)
         
+        # Generate severity level
+        severity = SeverityService.analyze_severity(ai_description)
+        
+        # Generate cost estimate
+        cost_estimate = CostEstimationService.estimate_repair_cost(payload.category, severity)
+        
         # Save to database
         supabase.table("images") \
-            .update({"ai_description": ai_description, "category": payload.category}) \
+            .update({
+                "ai_description": ai_description,
+                "category": payload.category,
+                "severity": severity,
+                "cost_estimate": cost_estimate
+            }) \
             .eq("id", str(payload.image_id)) \
             .execute()
             
-        return AIAnalyzeImageResponse(image_id=payload.image_id, description=ai_description)
+        return AIAnalyzeImageResponse(
+            image_id=payload.image_id,
+            description=ai_description,
+            severity=severity,
+            cost_estimate=cost_estimate
+        )
     except HTTPException:
         raise
     except Exception as e:
