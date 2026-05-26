@@ -4,6 +4,7 @@ from utils.auth import get_current_user, CurrentUser
 from utils.database import supabase
 from services.pdf_service import PDFService
 from services.storage_service import StorageService
+from services.notification_service import NotificationService
 
 router = APIRouter(prefix="/api/pdf", tags=["pdf"])
 
@@ -42,10 +43,10 @@ def generate_pdf_report(
         images_list = images_response.data or []
         
         # 3. Generate PDF raw bytes
-        pdf_bytes = PDFService.generate_report_pdf(report_data, images_list)
+        pdf_bytes = PDFService.generate_report_pdf(report_data, images_list, lang=payload.lang)
         
         # 4. Upload PDF to storage (Cloudinary or local)
-        filename = f"inspection_report_{report_data.get('site_name', 'site').replace(' ', '_')}.pdf"
+        filename = f"inspection_report_{report_data.get('site_name', 'site').replace(' ', '_')}_{payload.lang}.pdf"
         pdf_url = StorageService.upload_pdf(pdf_bytes, filename)
         
         # 5. Update PDF URL and status in reports table
@@ -53,6 +54,16 @@ def generate_pdf_report(
             .update({"pdf_url": pdf_url, "status": "completed"}) \
             .eq("id", str(payload.report_id)) \
             .execute()
+            
+        # 6. Send email notification
+        target_email = payload.client_email or (current_user.email if hasattr(current_user, "email") else None)
+        if target_email:
+            NotificationService.send_report_email(
+                client_email=target_email,
+                client_name=report_data.get("client_name", "Valued Client"),
+                report_title=report_data.get("report_title", "Inspection Report"),
+                pdf_url=pdf_url
+            )
             
         return {"pdf_url": pdf_url}
         
@@ -67,6 +78,7 @@ def generate_pdf_report(
 @router.get("/download/{report_id}")
 def download_pdf_stream(
     report_id: str,
+    lang: str = "en",
     current_user: CurrentUser = Depends(get_current_user)
 ):
     """
@@ -95,9 +107,9 @@ def download_pdf_stream(
             
         images_list = images_response.data or []
         
-        pdf_bytes = PDFService.generate_report_pdf(report_data, images_list)
+        pdf_bytes = PDFService.generate_report_pdf(report_data, images_list, lang=lang)
         
-        filename = f"inspection_report_{report_data.get('site_name', 'site').replace(' ', '_')}.pdf"
+        filename = f"inspection_report_{report_data.get('site_name', 'site').replace(' ', '_')}_{lang}.pdf"
         
         return Response(
             content=pdf_bytes,
