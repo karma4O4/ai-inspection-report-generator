@@ -21,9 +21,14 @@ This tool lets building inspectors quickly generate PDF reports from site visits
 - **Inspection Workspaces**: Keep photos and metadata organized by site and client.
 - **Drag-and-Drop Uploader**: Direct upload with image validation (supports format checks and file size limits).
 - **GPT-4o Vision integration**: Categorized defect analysis (Roof Defect, Gutter Blockage, HVAC, etc.).
+- **AI Severity Scoring**: Automatically assigns a severity level based on defect descriptions.
+- **Cost Estimation**: Generates rough repair cost estimates based on defect type and severity.
+- **Voice Notes Transcription**: Transcribes audio notes using the OpenAI Whisper API.
 - **OCR extraction**: OCR parser to extract serial numbers and spec text from equipment plates.
 - **AI Executive Summary**: Generates a brief technical summary based on the uploaded findings.
 - **A4 PDF Export**: Formatted layout engine using ReportLab, complete with page numbering, running headers, and image grids.
+- **Multi-language PDF Export**: Allows exporting reports in multiple languages including Hindi and Marathi.
+- **Client Notifications**: Automatically sends the final report link via email using SendGrid or Resend.
 - **Authentication & Security**: Supabase auth coupled with Row-Level Security (RLS) policies.
 - **Storage Fallbacks**: Uses Cloudinary for cloud hosting with a local filesystem fallback.
 - **Dockerized**: Container configuration included for simple backend hosting.
@@ -84,9 +89,12 @@ ai-inspection-report/
 ### Backend
 - **FastAPI**: Async web server
 - **Supabase (PostgreSQL)**: Database, Auth, and row-level security
-- **OpenAI GPT-4o**: Vision-based analysis & summaries
+- **OpenAI GPT-4o**: Vision-based analysis, cost estimation, & summaries
+- **OpenAI Whisper**: Voice note transcription
 - **PaddleOCR**: Local image text extraction
 - **ReportLab**: PDF generator
+- **Google Translate API**: Multi-language report support
+- **SendGrid / Resend**: Email notifications
 - **Cloudinary**: Cloud asset storage (optional)
 
 ### Frontend
@@ -167,6 +175,13 @@ SUPABASE_KEY=your-supabase-key
 
 # AI and OCR
 OPENAI_API_KEY=sk-proj-your-key-here
+
+# Translation (Optional)
+GOOGLE_TRANSLATE_API_KEY=your-google-translate-key
+
+# Notifications (Optional)
+SENDGRID_API_KEY=your-sendgrid-key
+RESEND_API_KEY=your-resend-key
 
 # Optional Storage CDN (fallback to local folder if not configured)
 CLOUDINARY_CLOUD_NAME=your-cloud-name
