@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
 # Import routers
-from routers import auth, reports, images, ai, pdf
+from routers import auth, reports, images, ai, pdf, voice_notes
 
 load_dotenv()
 
@@ -44,6 +44,7 @@ app.include_router(reports.router)
 app.include_router(images.router)
 app.include_router(ai.router)  # Includes /api/ai/* and /api/categories
 app.include_router(pdf.router)
+app.include_router(voice_notes.router)
 
 @app.get("/")
 def root():
