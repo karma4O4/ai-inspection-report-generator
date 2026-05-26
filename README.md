@@ -1,344 +1,209 @@
-# 🏗️ AI Inspection Report Generator
+# AI Inspection Report Generator
 
-> A production-ready, full-stack AI-powered property inspection platform — built with FastAPI, Next.js 14, GPT-4o Vision, PaddleOCR, and Supabase.
-
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat&logo=next.js&logoColor=white)](https://nextjs.org)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=flat&logo=typescript&logoColor=white)](https://typescriptlang.org)
-[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=flat&logo=supabase&logoColor=white)](https://supabase.com)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat&logo=docker&logoColor=white)](https://docker.com)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
+A tool to help building inspectors generate structured property inspection reports. Built with FastAPI, Next.js, OpenAI GPT-4o Vision, PaddleOCR, and Supabase.
 
 ---
 
-## 📋 Overview
+## Overview
 
-The **AI Inspection Report Generator** empowers building inspectors to:
-
-- Create and manage structured **inspection workspaces** by client, site, and date
-- Upload site photos (roofs, gutters, HVAC, structural defects) via a **drag-and-drop interface**
-- Automatically generate **technical engineering descriptions** using **OpenAI GPT-4o Vision**
-- Extract text from equipment plates and spec labels using **PaddleOCR**
-- Synthesize all findings into a professional **AI executive summary**
-- Export a polished, client-ready **A4 PDF report** with headers, metadata, and photo evidence
-
----
-
-## ✨ Features
-
-| Feature | Description |
-|---|---|
-| 🗂️ **Inspection Workspaces** | Create and manage multiple inspections per client, site, and audit date |
-| 📸 **Drag-and-Drop Upload** | React Dropzone uploader with progress states, 5MB size cap, and format validation |
-| 🤖 **GPT-4o Vision Analysis** | Category-aware AI descriptions (Roof Defect, Gutter Blockage, HVAC Concern, etc.) |
-| 🔍 **PaddleOCR Integration** | Extract text from equipment plates, stamps, and spec panels |
-| 📝 **AI Executive Summary** | Aggregates all photo findings into a 4–6 sentence professional conclusion |
-| 📄 **ReportLab PDF Export** | A4 reports with running headers, confidential footers, metadata tables, and photo logs |
-| 🔐 **JWT + RLS Security** | Supabase Row-Level Security ensures users only access their own data |
-| ☁️ **Cloud Storage** | Cloudinary image hosting with local filesystem fallback |
-| 🐳 **Docker Ready** | Production containerised backend with `python:3.10-slim` |
-| 🔄 **Resilient Fallbacks** | Graceful degradation when OpenAI or OCR credentials are unavailable |
+This tool lets building inspectors quickly generate PDF reports from site visits:
+- Create workspaces for specific clients, sites, and dates.
+- Upload photos of structural defects, HVAC units, roof issues, etc.
+- Run GPT-4o Vision to get structured engineering descriptions of the issues.
+- Extract equipment plate details using PaddleOCR.
+- Compile findings into a typed executive summary.
+- Export clean, printable A4 PDF reports with photo evidence and metadata tables.
 
 ---
 
-## 🏛️ Architecture
+## Features
+
+- **Inspection Workspaces**: Keep photos and metadata organized by site and client.
+- **Drag-and-Drop Uploader**: Direct upload with image validation (supports format checks and file size limits).
+- **GPT-4o Vision integration**: Categorized defect analysis (Roof Defect, Gutter Blockage, HVAC, etc.).
+- **OCR extraction**: OCR parser to extract serial numbers and spec text from equipment plates.
+- **AI Executive Summary**: Generates a brief technical summary based on the uploaded findings.
+- **A4 PDF Export**: Formatted layout engine using ReportLab, complete with page numbering, running headers, and image grids.
+- **Authentication & Security**: Supabase auth coupled with Row-Level Security (RLS) policies.
+- **Storage Fallbacks**: Uses Cloudinary for cloud hosting with a local filesystem fallback.
+- **Dockerized**: Container configuration included for simple backend hosting.
+
+---
+
+## Project Structure
 
 ```
 ai-inspection-report/
-├── backend/                          # FastAPI Python API
-│   ├── main.py                       # App entry point, CORS, static mounts
-│   ├── Dockerfile                    # Production container (python:3.10-slim)
-│   ├── requirements.txt              # Python dependencies
-│   ├── .env.example                  # Environment variable template
+├── backend/                          # FastAPI Backend
+│   ├── main.py                       # App entry point, CORS, static routes
+│   ├── Dockerfile                    # Production container setup
+│   ├── requirements.txt              # Backend dependencies
+│   ├── .env.example                  # Environment configuration template
 │   ├── models/
-│   │   └── schemas.py                # Pydantic request/response schemas
+│   │   └── schemas.py                # Pydantic schemas
 │   ├── routers/
-│   │   ├── auth.py                   # Login / register proxies
+│   │   ├── auth.py                   # Auth proxy routes
 │   │   ├── reports.py                # Reports CRUD
-│   │   ├── images.py                 # Image upload & metadata
-│   │   ├── ai.py                     # GPT-4o Vision, OCR, category endpoints
-│   │   └── pdf.py                    # PDF compilation & binary download
+│   │   ├── images.py                 # Image uploads
+│   │   ├── ai.py                     # GPT-4o Vision & PaddleOCR endpoints
+│   │   └── pdf.py                    # PDF compiler & download route
 │   ├── services/
-│   │   ├── openai_service.py         # GPT-4o description & summary synthesis
-│   │   ├── ocr_service.py            # PaddleOCR with CPU fallback
-│   │   ├── pdf_service.py            # ReportLab A4 layout engine
-│   │   └── storage_service.py        # Cloudinary + local storage adapters
+│   │   ├── openai_service.py         # OpenAI GPT-4o wrappers
+│   │   ├── ocr_service.py            # PaddleOCR integration
+│   │   ├── pdf_service.py            # ReportLab A4 PDF builder
+│   │   └── storage_service.py        # Cloudinary and filesystem adapters
 │   └── utils/
-│       ├── auth.py                   # JWT validation dependency
-│       └── database.py               # Supabase client initializer
-├── frontend/                         # Next.js 14 App Router
+│       ├── auth.py                   # JWT verification
+│       └── database.py               # Supabase DB client helper
+├── frontend/                         # Next.js Frontend
 │   ├── src/
-│   │   ├── app/                      # App Router pages & layouts
-│   │   │   ├── page.tsx              # Landing / login page
-│   │   │   ├── dashboard/            # Inspection workspace dashboard
-│   │   │   └── reports/[id]/         # Individual report workspace
+│   │   ├── app/                      # App router layout & pages
+│   │   │   ├── page.tsx              # Login / Landing page
+│   │   │   ├── dashboard/            # Projects list
+│   │   │   └── reports/[id]/         # Project report workspace
 │   │   ├── components/
-│   │   │   ├── auth/                 # Login & register forms
-│   │   │   ├── images/               # Image upload cards & AI result display
-│   │   │   ├── reports/              # Report list & creation forms
-│   │   │   └── ui/                   # Shared UI primitives
+│   │   │   ├── auth/                 # Forms for logging in & signing up
+│   │   │   ├── images/               # Image dropzone & AI analysis cards
+│   │   │   ├── reports/              # Report creators & lists
+│   │   │   └── ui/                   # Core buttons, inputs, dialogs
 │   │   ├── lib/
-│   │   │   ├── api.ts                # Axios API client
-│   │   │   ├── store.ts              # Zustand global state store
+│   │   │   ├── api.ts                # Axios network instance
+│   │   │   ├── store.ts              # Zustand store for state management
 │   │   │   └── supabase.ts           # Supabase browser client
 │   │   └── types/
-│   │       └── index.ts              # Shared TypeScript types
+│   │       └── index.ts              # Shared TypeScript interfaces
 │   ├── .env.local.example            # Frontend environment template
-│   ├── next.config.mjs               # Next.js build configuration
-│   ├── tailwind.config.ts            # Tailwind CSS configuration
-│   └── package.json                  # NPM dependencies
-└── schema.sql                        # Supabase SQL migration (tables + RLS)
+│   └── package.json                  # Frontend packages
+└── schema.sql                        # Database tables, keys, and RLS policies
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## Technical Stack
 
 ### Backend
-- **[FastAPI](https://fastapi.tiangolo.com)** — High-performance async Python API framework
-- **[Supabase](https://supabase.com)** — PostgreSQL database with built-in Auth and RLS
-- **[OpenAI GPT-4o](https://platform.openai.com)** — Vision-based image analysis and summarization
-- **[PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR)** — Text extraction from equipment plates
-- **[ReportLab](https://www.reportlab.com)** — Professional A4 PDF generation
-- **[Cloudinary](https://cloudinary.com)** — Cloud image storage and CDN
-- **[python-jose](https://github.com/mpdavis/python-jose)** — JWT authentication
+- **FastAPI**: Async web server
+- **Supabase (PostgreSQL)**: Database, Auth, and row-level security
+- **OpenAI GPT-4o**: Vision-based analysis & summaries
+- **PaddleOCR**: Local image text extraction
+- **ReportLab**: PDF generator
+- **Cloudinary**: Cloud asset storage (optional)
 
 ### Frontend
-- **[Next.js 14](https://nextjs.org)** — React framework with App Router
-- **[TypeScript](https://typescriptlang.org)** — Type-safe frontend development
-- **[Tailwind CSS](https://tailwindcss.com)** — Utility-first CSS styling
-- **[Zustand](https://zustand-demo.pmnd.rs)** — Lightweight global state management
-- **[React Dropzone](https://react-dropzone.js.org)** — Drag-and-drop file uploads
-- **[Supabase JS](https://supabase.com/docs/reference/javascript)** — Auth helpers and client SDK
-- **[Axios](https://axios-http.com)** — HTTP client for API requests
-- **[Lucide React](https://lucide.dev)** — Icon library
-- **[react-hot-toast](https://react-hot-toast.com)** — Toast notifications
+- **Next.js 14**: React framework with App Router
+- **TypeScript**: Shared type definitions
+- **Tailwind CSS**: UI styling
+- **Zustand**: Client-side state
+- **React Dropzone**: Drag-and-drop file imports
 
 ---
 
-## ⚡ Quick Start
+## Setup & Running Locally
 
-### Prerequisites
+### 1. Database Configuration
+1. Spin up a new database on [Supabase](https://supabase.com).
+2. Open the SQL editor and execute the query inside `schema.sql`.
+3. This creates the tables (`reports`, `images`, `categories`) and sets up Row-Level Security policies.
 
-- Python 3.10+
-- Node.js 18+
-- A [Supabase](https://supabase.com) project
-- An [OpenAI API key](https://platform.openai.com)
-- (Optional) A [Cloudinary](https://cloudinary.com) account
-
----
-
-### 1. Database Setup (Supabase)
-
-1. Create a project on [Supabase](https://supabase.com)
-2. Open the **SQL Editor** and run the full contents of `schema.sql`
-3. This will create:
-   - `reports` table — stores inspection metadata
-   - `images` table — links uploaded photos to reports
-   - `categories` table — pre-seeded inspection categories
-   - **Row-Level Security (RLS)** policies on all tables
-
----
-
-### 2. Backend Setup
+### 2. Run the Backend
 
 ```bash
-# Navigate to backend directory
 cd backend
 
-# Create and activate virtual environment
+# Setup virtual environment
 python3 -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+source venv/bin/activate      # On Windows: venv\Scripts\activate
 
-# Install dependencies
+# Install requirements
 pip install -r requirements.txt
 
-# Configure environment variables
+# Configure settings
 cp .env.example .env
-# Edit .env and fill in your keys (see .env.example for all required fields)
+# Fill in your database URL, OpenAI key, JWT secrets, etc.
 
-# Start the development server
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+# Start development server
+uvicorn main:app --reload
 ```
 
-API will be live at **http://localhost:8000**  
-Interactive docs: **http://localhost:8000/docs**
+The API docs will be available at `http://localhost:8000/docs`.
 
----
-
-### 3. Frontend Setup
+### 3. Run the Frontend
 
 ```bash
-# Open a new terminal and navigate to frontend
 cd frontend
 
-# Install npm packages
+# Install packages
 npm install
 
-# Configure environment variables
+# Setup env variables
 cp .env.local.example .env.local
-# Ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY match your project
+# Make sure the Supabase keys and API URLs are configured correctly
 
-# Start the development server
+# Start the dev server
 npm run dev
 ```
 
-App will be live at **http://localhost:3000**
+Open `http://localhost:3000` in your browser.
 
 ---
 
-## 🔑 Environment Variables
+## Environment Variables
 
 ### Backend (`backend/.env`)
 
 ```env
-# Server
 PORT=8000
 HOST=0.0.0.0
 ENVIRONMENT=development
 
-# JWT
-JWT_SECRET_KEY=your-strong-secret-key
+# JWT Secrets (used for securing router paths)
+JWT_SECRET_KEY=your-secret-key-here
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
 
-# Supabase
+# Database
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your-supabase-anon-or-service-role-key
+SUPABASE_KEY=your-supabase-key
 
-# OpenAI
-OPENAI_API_KEY=sk-proj-...
+# AI and OCR
+OPENAI_API_KEY=sk-proj-your-key-here
 
-# Cloudinary (optional — local fallback used if omitted)
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+# Optional Storage CDN (fallback to local folder if not configured)
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
 ```
 
 ### Frontend (`frontend/.env.local`)
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
 
-> ⚠️ **Never commit `.env` or `.env.local` files.** Only `.env.example` and `.env.local.example` are safe to commit.
+---
+
+## Security Details
+
+- **Row-Level Security (RLS)**: Policies check that the database queries match `auth.uid() = user_id`, keeping different users' reports isolated.
+- **JWT Authorization**: Requests to the FastAPI endpoints must include the Authorization Bearer header. The backend validates this token directly with Supabase before resolving queries.
+- **File Validation**: Image sizes and formats are checked to prevent arbitrary file execution.
 
 ---
 
-## 🐳 Docker Deployment
+## Docker
 
-Build and run the backend in a production container:
+If you want to run the backend in a container:
 
 ```bash
 cd backend
-
-# Build the Docker image
 docker build -t ai-inspector-backend .
-
-# Run the container with environment variables
 docker run -p 8000:8000 --env-file .env ai-inspector-backend
 ```
 
-The backend container:
-- Uses `python:3.10-slim` base image
-- Installs system dependencies for Pillow, OCR, and PDF generation
-- Exposes port `8000`
-- Runs via `uvicorn` in production mode
-
 ---
 
-## 🛡️ Security
-
-- **JWT Authentication** — All FastAPI CRUD routes validate the Bearer token via `supabase.auth.get_user(token)`
-- **Row-Level Security (RLS)** — PostgreSQL policies enforce that `reports.user_id = auth.uid()` for all operations
-- **Image ownership validation** — Image routes verify the parent report belongs to the requesting user
-- **Environment secrets** — All sensitive keys are loaded from `.env` and never exposed in source code
-- **Secrets excluded from Git** — `.gitignore` covers `.env`, `.env.local`, `*.pem`, and `*.key`
-
----
-
-## 📊 Database Schema
-
-```
-reports          images              categories
-──────────────   ─────────────────   ──────────────────
-id (uuid PK)     id (uuid PK)        id (uuid PK)
-user_id (FK)     report_id (FK)      name (unique)
-site_name        image_url           description
-client_name      filename            created_at
-report_title     category
-inspection_date  ai_description
-conclusion       edited_description
-pdf_url          ocr_text
-status           upload_order
-created_at       created_at
-updated_at
-```
-
----
-
-## 🗂️ Inspection Categories
-
-Pre-seeded categories available for AI analysis:
-
-| Category | Description |
-|---|---|
-| Gutter Blockage | Debris and blockages in gutter systems |
-| Roof Defect | Damage or defects on roofing materials |
-| Water Damage | Signs of water infiltration or damage |
-| Structural Issue | Structural concerns or damage |
-| Siding Damage | Damage to exterior siding |
-| Foundation Issue | Foundation cracks or concerns |
-| Electrical Hazard | Electrical safety issues |
-| Plumbing Issue | Plumbing defects or leaks |
-| HVAC Concern | Heating and cooling system issues |
-| General Maintenance | General maintenance items |
-
----
-
-## 📁 API Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/auth/login` | Authenticate user |
-| `POST` | `/auth/register` | Register new user |
-| `GET` | `/reports` | List all reports for user |
-| `POST` | `/reports` | Create new report |
-| `GET` | `/reports/{id}` | Get report by ID |
-| `PUT` | `/reports/{id}` | Update report |
-| `DELETE` | `/reports/{id}` | Delete report |
-| `POST` | `/images/upload` | Upload image to report |
-| `GET` | `/images/{report_id}` | Get images for report |
-| `POST` | `/ai/describe` | Run GPT-4o Vision analysis |
-| `POST` | `/ai/summarize` | Generate executive summary |
-| `GET` | `/ai/categories` | List inspection categories |
-| `GET` | `/pdf/{report_id}` | Generate and download PDF |
-
-Full interactive API docs available at **http://localhost:8000/docs**
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feat/your-feature`
-3. Commit using conventional commits: `git commit -m "feat: add your feature"`
-4. Push to your fork: `git push origin feat/your-feature`
-5. Open a Pull Request
-
----
-
-## 📄 License
+## License
 
 This project is licensed under the [MIT License](LICENSE).
-
----
-
-<div align="center">
-
-Built with ❤️ by [karma4O4](https://github.com/karma4O4)
-
-</div>
